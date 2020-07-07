@@ -1,1 +1,1 @@
-WebSocketRemoteControl
+基于WebSocket的远程控制管理软件
