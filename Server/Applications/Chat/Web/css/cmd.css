@@ -1,0 +1,50 @@
+html,body{
+    height:100%;
+    overflow:hidden;
+}
+body{
+    overflow-y:scroll;
+}
+#now {
+	border: 1px solid;
+	width: 100%;
+	background-color: black;
+	color: white;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	outline: 0;
+	font-size: 14px;
+}
+body{
+    background-color: black;
+    color:white;
+    margin:0;
+}
+p{
+    color:white;
+}
+div{
+    background-color: black;
+}
+a:link{
+    text-decoration:none
+}
+a:hover{
+    text-decoration:underline;
+
+}
+a:active{
+    text-decoration:underline;
+}
+#area{
+    margin:5px;
+}
+.user_kehu{
+   margin-bottom:8;float:left;margin-right: 50px;
+}
+.top{
+    margin-left: 5px;width:98%;height:30px;position:fixed;top:0;left:0;
+}
+.cmd{
+    margin-top: 30px;
+}
