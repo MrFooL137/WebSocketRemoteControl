@@ -21,7 +21,7 @@ namespace websocket
         private WebSocketService webService = null;
         private Boolean isRecon = false;
         private string url = null;
-        private System.Timers.Timer t = new System.Timers.Timer(2000); //
+        private System.Timers.Timer t = new System.Timers.Timer(2000); 
         public WebSocketBase(string url,WebSocketService webService)
         {
             this.webService = webService;

