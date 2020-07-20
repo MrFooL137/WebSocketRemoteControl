@@ -1,6 +1,6 @@
 WebSocketRemoteControl-Server
 =======
-基于workerman的GatewayWorker框架开发的一款高性能支持分布式部署的远程控制系统。
+基于workerman的GatewayWorker框架开发的一款高性能支持分布式部署的远程控制系统控制端。
 
 GatewayWorker框架文档：http://www.workerman.net/gatewaydoc/
 

