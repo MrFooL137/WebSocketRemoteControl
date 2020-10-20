@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WebSocketSharp;
-using System.IO;
-using System.Threading;
-using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
-using System.Text.RegularExpressions;
+﻿using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
+using System;
 using System.Diagnostics;
+using System.IO;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
+using WebSocketSharp;
 
 namespace websocket
 {
@@ -21,53 +18,57 @@ namespace websocket
         private WebSocketService webService = null;
         private Boolean isRecon = false;
         private string url = null;
-        private System.Timers.Timer t = new System.Timers.Timer(2000); 
-        public WebSocketBase(string url,WebSocketService webService)
+        private System.Timers.Timer t = new System.Timers.Timer(2000);
+        public WebSocketBase(string url, WebSocketService webService)
         {
             this.webService = webService;
             this.url = url;
         }
-        public void start() {
+        public void start()
+        {
             webSocketClient = new WebSocket(url);
             webSocketClient.OnError += new EventHandler<WebSocketSharp.ErrorEventArgs>(webSocketClient_Error);
             webSocketClient.OnOpen += new EventHandler(webSocketClient_Opened);
             webSocketClient.OnClose += new EventHandler<WebSocketSharp.CloseEventArgs>(webSocketClient_Closed);
             webSocketClient.OnMessage += new EventHandler<MessageEventArgs>(webSocketClient_MessageReceived);
             webSocketClient.ConnectAsync();
-            while (!webSocketClient.IsAlive) {
-           Console.WriteLine("Waiting WebSocket connnet......");
+            while (!webSocketClient.IsAlive)
+            {
+                Console.WriteLine("Waiting WebSocket connnet......");
                 Thread.Sleep(1000);
             }
             t.Elapsed += new System.Timers.ElapsedEventHandler(heatBeat);
             t.Start();
-       
+
         }
 
-        private void heatBeat(object sender, System.Timers.ElapsedEventArgs e) {
+        private void heatBeat(object sender, System.Timers.ElapsedEventArgs e)
+        {
 
-           // this.send("{\"type\":\"ping1\"}");
+            // this.send("{\"type\":\"ping1\"}");
         }
         private void webSocketClient_Error(object sender, WebSocketSharp.ErrorEventArgs e)
         {
-            
+
         }
         private void webSocketClient_MessageReceived(object sender, MessageEventArgs e)
         {
-         
-           
+
+
             var ControlWay = Midstr(e.Data, "\"type\":\"", "\"");
 
             if (ControlWay == "ping")
             {
                 this.send("{\"type\":\"ping\"}");
             }
-            else if (ControlWay == "say") {
+            else if (ControlWay == "say")
+            {
                 Base64Tools base64Tools = new Base64Tools();
                 var EncodeCmd = Midstr(e.Data, "\"content\":\"", "\"}");
                 commands = base64Tools.base64decode(EncodeCmd);
                 SortInputListText();
             }
-          // webService.onReceive(e.Data);
+            // webService.onReceive(e.Data);
         }
         private void SortOutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
         {
@@ -135,12 +136,13 @@ namespace websocket
         }
         private void webSocketClient_Opened(object sender, EventArgs e)
         {
-          //  this.send("{'event':'ping2'}");
+            //  this.send("{'event':'ping2'}");
         }
-       
+
         public Boolean isReconnect()
         {
-            if (isRecon) {
+            if (isRecon)
+            {
                 if (webSocketClient.IsAlive)
                 {
                     isRecon = false;
@@ -149,14 +151,16 @@ namespace websocket
             }
             return false;
         }
-        public void send(string channle) {
+        public void send(string channle)
+        {
             webSocketClient.Send(channle);
         }
-        public void stop() {
-            if (webSocketClient!=null)
+        public void stop()
+        {
+            if (webSocketClient != null)
                 webSocketClient.Close();
         }
-      
+
     }
     interface WebSocketService
     {

